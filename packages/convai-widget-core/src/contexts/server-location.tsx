@@ -24,8 +24,9 @@ export function ServerLocationProvider({
   const value = useMemo(() => {
     const location = computed(() => parseLocation(serverLocation.value));
 
+   //modified for now to direct us traffic to global server.
     const serverUrlMap: Record<Location, string> = {
-      'us': import.meta.env.VITE_SERVER_URL_US,
+      'us': import.meta.env.VITE_SERVER_URL,
       'eu-residency': import.meta.env.VITE_SERVER_URL_EU_RESIDENCY,
       'global': import.meta.env.VITE_SERVER_URL,
     };

@@ -5,6 +5,7 @@ import { createContext } from "preact/compat";
 import { useAttribute } from "./attributes";
 import { useLanguageConfig } from "./language-config";
 import { useServerLocation } from "./server-location";
+import { useSignedUrl } from "./signed-url";
 
 import { useContextSafely } from "../utils/useContextSafely";
 import { parseBoolAttribute } from "../types/attributes";
@@ -60,7 +61,7 @@ export function SessionConfigProvider({
 
   const { webSocketUrl } = useServerLocation();
   const agentId = useAttribute("agent-id");
-  const signedUrl = useAttribute("signed-url");
+  const { signedUrl, isLoading, error } = useSignedUrl();
   const textOnly = useTextOnly();
   const value = useComputed<SessionConfig | null>(() => {
     const commonConfig = {
@@ -70,14 +71,7 @@ export function SessionConfigProvider({
       textOnly: textOnly.value,
     };
 
-    if (agentId.value) {
-      return {
-        agentId: agentId.value,
-        origin: webSocketUrl.value,
-        ...commonConfig,
-      };
-    }
-
+    // If we have a signed URL (either provided or fetched), use it
     if (signedUrl.value) {
       return {
         signedUrl: signedUrl.value,
@@ -85,9 +79,21 @@ export function SessionConfigProvider({
       };
     }
 
-    console.error(
-      "[ConversationalAI] Either agent-id or signed-url is required"
-    );
+    // Fallback to agent-id mode if no signed URL and we have agent-id
+    if (agentId.value && !isLoading.value) {
+      return {
+        agentId: agentId.value,
+        origin: webSocketUrl.value,
+        ...commonConfig,
+      };
+    }
+
+    // Only show error if we're not loading and have no valid config
+    if (!isLoading.value) {
+      console.error(
+        "[ConversationalAI] Either agent-id or signed-url is required"
+      );
+    }
     return null;
   });
 
