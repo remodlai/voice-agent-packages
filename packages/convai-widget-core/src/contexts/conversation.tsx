@@ -33,6 +33,11 @@ export type TranscriptEntry =
       conversationIndex: number;
     }
   | {
+      type: "contextual_update";
+      message: string;
+      conversationIndex: number;
+    }
+  | {
       type: "disconnection";
       role: Role;
       message?: undefined;
