@@ -106,11 +106,11 @@ export class Connection {
         ? config.signedUrl
         : origin + WSS_API_PATHNAME + config.agentId;
 
-      console.log('[Connection] Creating WebSocket connection...');
-      console.log('[Connection] config.signedUrl:', config.signedUrl);
-      console.log('[Connection] config.agentId:', config.agentId);
-      console.log('[Connection] config.origin:', config.origin);
-      console.log('[Connection] Final WebSocket URL:', url);
+      console.log("[Connection] Creating WebSocket connection...");
+      console.log("[Connection] config.signedUrl:", config.signedUrl);
+      console.log("[Connection] config.agentId:", config.agentId);
+      console.log("[Connection] config.origin:", config.origin);
+      console.log("[Connection] Final WebSocket URL:", url);
 
       const protocols = [MAIN_PROTOCOL];
       if (config.authorization) {
@@ -260,18 +260,20 @@ export class Connection {
   }
 
   public sendMessage(message: OutgoingSocketEvent) {
-    console.log('[Connection] sendMessage called with:', message);
-    console.log('[Connection] socket.readyState:', this.socket.readyState);
-    console.log('[Connection] socket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3');
-    
+    console.log("[Connection] sendMessage called with:", message);
+    console.log("[Connection] socket.readyState:", this.socket.readyState);
+    console.log(
+      "[Connection] socket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3"
+    );
+
     const jsonString = JSON.stringify(message);
-    console.log('[Connection] JSON string to send:', jsonString);
-    
+    console.log("[Connection] JSON string to send:", jsonString);
+
     try {
       this.socket.send(jsonString);
-      console.log('[Connection] socket.send() completed successfully');
+      console.log("[Connection] socket.send() completed successfully");
     } catch (error) {
-      console.error('[Connection] Error in socket.send():', error);
+      console.error("[Connection] Error in socket.send():", error);
     }
   }
 
