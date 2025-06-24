@@ -51,6 +51,33 @@ export type TranscriptEntry =
 
 export function ConversationProvider({ children }: ConversationProviderProps) {
   const value = useConversationSetup();
+  const sendContextualUpdateRef = useRef(value.sendContextualUpdate);
+
+  // Update the ref whenever the function changes
+  useEffect(() => {
+    sendContextualUpdateRef.current = value.sendContextualUpdate;
+  }, [value.sendContextualUpdate]);
+
+  // Expose global remodlWidget API
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).remodlWidget = {
+        sendContextualUpdate: (text: string) => {
+          sendContextualUpdateRef.current(text);
+        },
+        isReady: () => {
+          return value.status.value === 'connected';
+        }
+      };
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).remodlWidget;
+      }
+    };
+  }, []);
 
   // Automatically disconnect the conversation after 10 minutes of no messages
   useSignalEffect(() => {
@@ -67,6 +94,21 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
       };
     }
   });
+
+  // Add event listener for contextual updates
+  useEffect(() => {
+    const handleContextualUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.text) {
+        sendContextualUpdateRef.current(event.detail.text);
+      }
+    };
+
+    document.addEventListener('elevenlabs-convai:contextual-update', handleContextualUpdate as EventListener);
+    
+    return () => {
+      document.removeEventListener('elevenlabs-convai:contextual-update', handleContextualUpdate as EventListener);
+    };
+  }, []); // Empty dependency array since we use ref
 
   return (
     <ConversationContext.Provider value={value}>
@@ -296,6 +338,9 @@ function useConversationSetup() {
       },
       sendUserActivity: () => {
         conversationRef.current?.sendUserActivity();
+      },
+      sendContextualUpdate: (text: string) => {
+        conversationRef.current?.sendContextualUpdate(text);
       },
     };
   }, [config, isMuted]);
